@@ -22,21 +22,52 @@ public class Main {
       InputStream input = clientSocket.getInputStream();
       BufferedReader reader = new BufferedReader(new InputStreamReader(input));
       String line = reader.readLine();
-      System.out.println(line);
-      String[] HttpRequest = line.split(" ", 0);
+      String[] HttpRequest = line.split(" ");
       OutputStream output = clientSocket.getOutputStream();
-      if(HttpRequest[1].equals("/")) {
-        output.write("HTTP/1.1 200 OK\r\n\r\n".getBytes());
-      } else if (HttpRequest[1].startsWith("/echo/")) {
-        String queryParam = HttpRequest[1].split("/")[2];
-        output.write(("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: " +
-        queryParam.length() + "\r\n\r\n" + queryParam).getBytes());
-      } else {
-        output.write("HTTP/1.1 404 Not Found\r\n\r\n".getBytes());
+      String response;
+      String endpoint = getEndpoint(HttpRequest[1]);
+      switch (endpoint) {
+        case "/":
+          System.out.println("version");
+          response = "HTTP/1.1 200 OK\r\n" + "Content-Type: text/plain\r\n" + 
+          "Content-Length: 0\r\n\r\n";
+          output.write(response.getBytes());
+          break;
+        case "echo":
+          String queryParam = HttpRequest[1].split("/")[2];
+          response = "HTTP/1.1 200 OK\r\n" + "Content-Type: text/plain\r\n" + 
+          "Content-Length: " + queryParam.length() + "\r\n\r\n" + queryParam;
+          output.write(response.getBytes());
+          break;
+        case "user-agent":
+          reader.readLine();
+          String userAgent = reader.readLine().split("\\s+")[1];
+          response = String.format("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %s\r\n\r\n%s\r\n", 
+          userAgent.length(), userAgent);
+          output.write(response.getBytes());
+          break;
+        default:
+          response = "HTTP/1.1 404 Not Found\r\n\r\n";
+          output.write(response.getBytes());
       }
+      output.flush();
       System.out.println("accepted new connection");
     } catch (IOException e) {
       System.out.println("IOException: " + e.getMessage());
     }
   }
+}
+
+private static String getEndpoint(String httpRequest) {
+  if(httpRequest.equals("/")) {
+    return "/";
+  }
+  String[] command = httpRequest.split("/");
+  if(command[1].equals("echo") && command.length > 2) {
+    return "echo";
+  }
+  if(command[1].equals("user-agent")) {
+    return "user-agent";
+  }
+  return "404";
 }
