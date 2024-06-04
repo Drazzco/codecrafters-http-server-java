@@ -16,7 +16,7 @@ public class Main {
       //TCP Connection
       serverSocket = new ServerSocket(4221);
       // Since the tester restarts your program quite often, setting SO_REUSEADDR
-      // ensures that we don't run into 'Address already in use' errors
+      // ensures that we don't run into 'Address already in use' errors 1
       serverSocket.setReuseAddress(true);
       clientSocket = serverSocket.accept(); // Wait for connection from client.
       InputStream input = clientSocket.getInputStream();
