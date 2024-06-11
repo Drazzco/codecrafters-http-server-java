@@ -56,18 +56,20 @@ public class Main {
       System.out.println("IOException: " + e.getMessage());
     }
   }
+  
+  private static String getEndpoint(String httpRequest) {
+    if(httpRequest.equals("/")) {
+      return "/";
+    }
+    String[] command = httpRequest.split("/");
+    if(command[1].equals("echo") && command.length > 2) {
+      return "echo";
+    }
+    if(command[1].equals("user-agent")) {
+      return "user-agent";
+    }
+    return "404";
+  }
 }
 
-private static String getEndpoint(String httpRequest) {
-  if(httpRequest.equals("/")) {
-    return "/";
-  }
-  String[] command = httpRequest.split("/");
-  if(command[1].equals("echo") && command.length > 2) {
-    return "echo";
-  }
-  if(command[1].equals("user-agent")) {
-    return "user-agent";
-  }
-  return "404";
-}
+
