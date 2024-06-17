@@ -34,6 +34,7 @@ public class HttpServer extends Thread {
             while(true) {
                 Socket clientSocket = serverSocket.accept();
                 exec.submit(() -> handleRequest(clientSocket));
+                serverSocket.close();
             }
         } catch (Exception e) {
             System.out.println("Exception: " + e.getMessage());
@@ -101,8 +102,6 @@ public class HttpServer extends Thread {
                         response = "HTTP/1.1 201 Created\r\n\r\n";
                         output.write(response.getBytes());
                         output.write(body.getBytes());
-                        output.flush();
-                        output.close();
                     }
                     break;
                 default:
