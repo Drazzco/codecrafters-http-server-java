@@ -17,10 +17,14 @@ public class HttpServer extends Thread {
     private final ExecutorService exec;
     private final String directory;
 
-    public HttpServer(final int port, final int concurrencyLevel, final String directory) {
+    public HttpServer(final int port, final int concurrencyLevel, String[] args) {
         this.port = port;
         this.exec = Executors.newFixedThreadPool(concurrencyLevel);
-        this.directory = directory;
+        String dir = null;
+        if (args.length > 1 && args[0].equals("--directory")) {
+            dir = args[1];
+        }
+        this.directory = dir;
     }
 
     public void run() {
