@@ -34,7 +34,6 @@ public class HttpServer extends Thread {
             while(true) {
                 Socket clientSocket = serverSocket.accept();
                 exec.submit(() -> handleRequest(clientSocket));
-                serverSocket.close();
             }
         } catch (Exception e) {
             System.out.println("Exception: " + e.getMessage());
