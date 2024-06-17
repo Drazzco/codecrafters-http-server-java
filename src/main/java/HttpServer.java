@@ -74,7 +74,7 @@ public class HttpServer {
                 case "files":
                     String fileName = HttpRequest[1].substring(7);
                     if(body.isEmpty()) {
-                        File file = new File(this.directory, fileName);
+                        File file = new File(directory, fileName);
                         if(file.exists()) {
                             byte[] fileContent = Files.readAllBytes(file.toPath());
                             String content = new String(fileContent);
@@ -90,6 +90,7 @@ public class HttpServer {
                         Files.write(path, body.getBytes());
                         response = "HTTP/1.1 201 Created\r\n\r\n";
                         output.write(response.getBytes());
+                        output.write(body.getBytes());
                     }
                     break;
                 default:
