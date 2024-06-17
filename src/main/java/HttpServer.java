@@ -1,20 +1,24 @@
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class HttpServer {
     private final int port;
     private final ExecutorService exec;
+    private final String directory;
 
-    public HttpServer(final int port, final int concurrencyLevel) {
+    public HttpServer(final int port, final int concurrencyLevel, final String directory) {
         this.port = port;
         this.exec = Executors.newFixedThreadPool(concurrencyLevel);
+        this.directory = directory;
     }
 
     public void run() {
@@ -59,6 +63,18 @@ public class HttpServer {
                     userAgent.length(), userAgent);
                     output.write(response.getBytes());
                     break;
+                case "files":
+                    String fileName = HttpRequest[1].substring(7);
+                    File file = new File(this.directory, fileName);
+                    if(file.exists()) {
+                        byte[] fileContent = Files.readAllBytes(file.toPath());
+                        String content = new String(fileContent);
+                        response = "HTTP/1.1 200 OK\r\n" + "Content-Type: application/octet-stream\r\n" + 
+                        "Content-Length: " + fileContent.length + "\r\n\r\n" + content;
+                    } else {
+                        response = "HTTP/1.1 404 Not Found\r\n\r\n";
+                    }
+                    break;
                 default:
                     response = "HTTP/1.1 404 Not Found\r\n\r\n";
                     output.write(response.getBytes());
@@ -70,7 +86,7 @@ public class HttpServer {
         }
     }
 
-    private static String getEndpoint(String httpRequest) {
+    private String getEndpoint(String httpRequest) {
         if(httpRequest.equals("/")) {
           return "/";
         }
@@ -80,6 +96,9 @@ public class HttpServer {
         }
         if(command[1].equals("user-agent")) {
           return "user-agent";
+        }
+        if(this.directory != null) {
+            return "files";
         }
         return "404";
       }
