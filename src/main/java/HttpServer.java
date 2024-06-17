@@ -7,6 +7,8 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -27,6 +29,7 @@ public class HttpServer {
             serverSocket.setReuseAddress(true);
             while(true) {
                 Socket clientSocket = serverSocket.accept();
+
                 exec.submit(() -> handleRequest(clientSocket));
             }
         } catch (Exception e) {
@@ -42,6 +45,11 @@ public class HttpServer {
             String[] HttpRequest = line.split(" ");
             OutputStream output = clientSocket.getOutputStream();
             String response;
+            StringBuilder data = new StringBuilder();
+            while(reader.ready()) {
+                data.append((char)reader.read());
+            }
+            String body = data.toString();
             String endpoint = getEndpoint(HttpRequest[1]);
             switch (endpoint) {
                 case "/":
@@ -65,15 +73,22 @@ public class HttpServer {
                     break;
                 case "files":
                     String fileName = HttpRequest[1].substring(7);
-                    File file = new File(this.directory, fileName);
-                    if(file.exists()) {
-                        byte[] fileContent = Files.readAllBytes(file.toPath());
-                        String content = new String(fileContent);
-                        response = "HTTP/1.1 200 OK\r\n" + "Content-Type: application/octet-stream\r\n" + 
-                        "Content-Length: " + fileContent.length + "\r\n\r\n" + content;
-                        output.write(response.getBytes());
+                    if(body.isEmpty()) {
+                        File file = new File(this.directory, fileName);
+                        if(file.exists()) {
+                            byte[] fileContent = Files.readAllBytes(file.toPath());
+                            String content = new String(fileContent);
+                            response = "HTTP/1.1 200 OK\r\n" + "Content-Type: application/octet-stream\r\n" + 
+                                "Content-Length: " + fileContent.length + "\r\n\r\n" + content;
+                            output.write(response.getBytes());
+                        } else {
+                            response = "HTTP/1.1 404 Not Found\r\n\r\n";
+                            output.write(response.getBytes());
+                        }
                     } else {
-                        response = "HTTP/1.1 404 Not Found\r\n\r\n";
+                        Path path = Paths.get(directory + fileName);
+                        Files.write(path, body.getBytes());
+                        response = "HTTP/1.1 201 Created\r\n\r\n";
                         output.write(response.getBytes());
                     }
                     break;
@@ -99,7 +114,7 @@ public class HttpServer {
         if(command[1].equals("user-agent")) {
           return "user-agent";
         }
-        if(this.directory != null) {
+        if(httpRequest.startsWith("/files/")) {
             return "files";
         }
         return "404";
