@@ -71,8 +71,10 @@ public class HttpServer {
                         String content = new String(fileContent);
                         response = "HTTP/1.1 200 OK\r\n" + "Content-Type: application/octet-stream\r\n" + 
                         "Content-Length: " + fileContent.length + "\r\n\r\n" + content;
+                        output.write(response.getBytes());
                     } else {
                         response = "HTTP/1.1 404 Not Found\r\n\r\n";
+                        output.write(response.getBytes());
                     }
                     break;
                 default:
