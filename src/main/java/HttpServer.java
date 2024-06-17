@@ -120,7 +120,7 @@ public class HttpServer {
         if(command[1].equals("user-agent")) {
           return "user-agent";
         }
-        if(httpRequest.startsWith("/files/")) {
+        if(directory != null) {
             return "files";
         }
         return "404";
