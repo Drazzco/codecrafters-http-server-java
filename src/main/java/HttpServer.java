@@ -12,7 +12,7 @@ import java.nio.file.Paths;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class HttpServer {
+public class HttpServer extends Thread {
     private final int port;
     private final ExecutorService exec;
     private final String directory;
@@ -29,7 +29,6 @@ public class HttpServer {
             serverSocket.setReuseAddress(true);
             while(true) {
                 Socket clientSocket = serverSocket.accept();
-
                 exec.submit(() -> handleRequest(clientSocket));
             }
         } catch (Exception e) {
@@ -96,6 +95,8 @@ public class HttpServer {
                         response = "HTTP/1.1 201 Created\r\n\r\n";
                         output.write(response.getBytes());
                         output.write(body.getBytes());
+                        output.flush();
+                        output.close();
                     }
                     break;
                 default:
