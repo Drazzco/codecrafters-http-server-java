@@ -51,7 +51,7 @@ public class HttpServer {
             }
             String preBody = data.toString();
             String body = null;
-            if(!preBody.isEmpty()) {
+            if(!data.isEmpty()) {
                 String[] allBody = preBody.split("\r\n");
                 body = allBody[3];
             }
