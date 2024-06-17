@@ -48,18 +48,19 @@ public class HttpServer extends Thread {
             String[] HttpRequest = line.split(" ");
             OutputStream output = clientSocket.getOutputStream();
             String response;
-            StringBuilder data = new StringBuilder();
-            while(reader.ready()) {
-                data.append((char)reader.read());
-            }
-            String preBody = data.toString();
             String body = null;
-            boolean flag = false;
-            if(!data.isEmpty()) {
-                String[] allBody = preBody.split("\r\n");
-                body = allBody[3];
-                flag = true;
+            if(HttpRequest[0].equals("POST")) {
+                StringBuilder data = new StringBuilder();
+                while(reader.ready()) {
+                    data.append((char)reader.read());
+                }
+                String preBody = data.toString();
+                if(!data.isEmpty()) {
+                    String[] allBody = preBody.split("\r\n");
+                    body = allBody[3];
+                }
             }
+            
             String endpoint = getEndpoint(HttpRequest[1]);
             switch (endpoint) {
                 case "/":
@@ -83,7 +84,7 @@ public class HttpServer extends Thread {
                     break;
                 case "files":
                     String fileName = HttpRequest[1].substring(7);
-                    if(!flag) {
+                    if(body == null) {
                         File file = new File(directory, fileName);
                         if(file.exists()) {
                             byte[] fileContent = Files.readAllBytes(file.toPath());
@@ -100,7 +101,6 @@ public class HttpServer extends Thread {
                         Files.write(path, body.getBytes());
                         response = "HTTP/1.1 201 Created\r\n\r\n";
                         output.write(response.getBytes());
-                        output.write(body.getBytes());
                     }
                     break;
                 default:
