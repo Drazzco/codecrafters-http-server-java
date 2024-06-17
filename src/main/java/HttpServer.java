@@ -49,7 +49,8 @@ public class HttpServer {
             while(reader.ready()) {
                 data.append((char)reader.read());
             }
-            String body = data.toString();
+            String[] allBody = data.toString().split("\r\n");
+            String body = allBody[3];
             String endpoint = getEndpoint(HttpRequest[1]);
             switch (endpoint) {
                 case "/":
