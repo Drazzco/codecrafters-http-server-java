@@ -54,9 +54,11 @@ public class HttpServer extends Thread {
             }
             String preBody = data.toString();
             String body = null;
+            boolean flag = false;
             if(!data.isEmpty()) {
                 String[] allBody = preBody.split("\r\n");
                 body = allBody[3];
+                flag = true;
             }
             String endpoint = getEndpoint(HttpRequest[1]);
             switch (endpoint) {
@@ -81,7 +83,7 @@ public class HttpServer extends Thread {
                     break;
                 case "files":
                     String fileName = HttpRequest[1].substring(7);
-                    if(body == null) {
+                    if(!flag) {
                         File file = new File(directory, fileName);
                         if(file.exists()) {
                             byte[] fileContent = Files.readAllBytes(file.toPath());
