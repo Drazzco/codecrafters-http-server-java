@@ -49,8 +49,12 @@ public class HttpServer {
             while(reader.ready()) {
                 data.append((char)reader.read());
             }
-            String[] allBody = data.toString().split("\r\n");
-            String body = allBody[3];
+            String preBody = data.toString();
+            String body = null;
+            if(!preBody.isEmpty()) {
+                String[] allBody = preBody.split("\r\n");
+                body = allBody[3];
+            }
             String endpoint = getEndpoint(HttpRequest[1]);
             switch (endpoint) {
                 case "/":
@@ -74,7 +78,7 @@ public class HttpServer {
                     break;
                 case "files":
                     String fileName = HttpRequest[1].substring(7);
-                    if(body.isEmpty()) {
+                    if(body == null) {
                         File file = new File(directory, fileName);
                         if(file.exists()) {
                             byte[] fileContent = Files.readAllBytes(file.toPath());
